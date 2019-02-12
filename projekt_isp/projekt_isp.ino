@@ -1,10 +1,11 @@
 #include <DS1307.h>
 #include <Wire.h>
 
+char data[100];
+#define pinCzujnikaRuchu 8                    // pin czujnika ruchu  
+
 DS1307 zegar;
 RTCDateTime dt;
-
-#define pinCzujnikaRuchu 8                    // pin czujnika ruchu  
 boolean czujnik_ruchu_zazb = false;           // informacja o zazbrojeniu czujnika ruchu --> 0 - niezazbrojony, 1 - zazbrojony
 boolean wykryto_ruch = false;                 // informacja o wykryciu ruchu przez czujnik ---> 0 - niewykryto, 1 - wykryto
 unsigned long czasWykryciaRuchu = 10000;      // po wykryciu ruchu, zmienna wykryto_ruch jest ustawiana na True na 10 sekund
@@ -21,13 +22,9 @@ void czytaj_czujnik_ruchu(){
       
       start_czujnika = millis();
 
-      
-      Serial.print(dt.year);   Serial.print("-");
-      Serial.print(dt.month);  Serial.print("-");
-      Serial.print(dt.day);    Serial.print(" ");
-      Serial.print(dt.hour);   Serial.print(":");
-      Serial.print(dt.minute); Serial.print(":");
-      Serial.print(dt.second); Serial.println(" ----> ");                                  
+      sprintf(data, "Data: %d, %d, %d, Godzina: %d, %d, %d", dt.year, dt.month, dt.day, dt.hour - 1, dt.minute + 6, dt.second);
+      Serial.print(data);  
+      Serial.print(" ---> ");                            
       Serial.println("Wysylam smsa z alarmem!");
       // wyslij_smsa();
       // wyslij_info_na_serwer()
@@ -61,6 +58,7 @@ void setup(){
   pinMode(pinCzujnikaRuchu, INPUT);
    
   Serial.println("Zczytywane danych z czujnika ruchu"); 
+  Serial.println(__TIME__);
 
   // Czujnik ruchu ustaw: w stan aktywny (zazbrojony), niewykryto ruchu, czas 10 sekund
   czujnik_ruchu_zazb = true;
@@ -80,6 +78,7 @@ void setup(){
 void loop(){
 
   dt = zegar.getDateTime();
+
   //zczytywanie danych z czujnika ruchu tylko wtedy, gdy jest zazbrojony
   if (czujnik_ruchu_zazb)
   {
