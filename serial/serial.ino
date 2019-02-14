@@ -13,8 +13,14 @@ String apn = "internet";                       //APN
 String apn_u = "internet";                     //APN-Username
 String apn_p = "internet";                     //APN-Password
 String url = "ptsv2.com/t/8qeqn-1550145914/post";  //URL for HTTP-POST-REQUEST
+
 String data1;   //String for the first Paramter (e.g. Sensor1)
 String data2;   //String for the second Paramter (e.g. Sensor2)
+char sms[140];
+char bufor[50];
+int k = 0;
+char h;
+String str;
  
 void setup() {
   //Begin serial comunication with Arduino and Arduino IDE (Serial Monitor)
@@ -26,30 +32,64 @@ void setup() {
   //Begin serial communication with Arduino and SIM800
   serialSIM800.begin(9600);
   delay(1000);
-  serialSIM800.write("ATE0\r");
-  runs1();
-  serialSIM800.write("AT+CMGF=1\r\n");
-  runs1();
+  serialSIM800.write("ATE0\r\n");
   delay(1000);
   serialSIM800.write("AT+CPIN=\"9303\"\r\n");
-  runs1();
   delay(1000);
-
-  Serial.println("Setup Complete!");
+//  serialSIM800.write("AT+CMGF=1\r\n");
+//  runs1();
+//  delay(1000);
   //sendSMS();
-  gsm_inithttp();
+  serialSIM800.write("AT+CMGF=1\r\n");
+  delay(1000);
+  serialSIM800.println("AT+CNMI=2,2,0,0,0");
+  while(serialSIM800.available())
+  {
+    Serial.write(serialSIM800.read());
+  }
+  Serial.println("Setup Complete!");
+ // readSMS();
+  //gsm_inithttp();
 }
  
 void loop() {
-  gsm_sendthttp();
+  //gsm_sendthttp();
 //  Read SIM800 output (if available) and print it in Arduino IDE Serial Monitor
-//  if(serialSIM800.available()){
-//    Serial.write(serialSIM800.read());
-//  }
-//  //Read Arduino IDE Serial Monitor inputs (if available) and send them to SIM800
-//  if(Serial.available()){    
-//    serialSIM800.write(Serial.read());
-//  }
+  
+  if(serialSIM800.available()){
+    //Serial.write(serialSIM800.read());
+    h = serialSIM800.read();
+    Serial.write(h);
+  }
+  //Read Arduino IDE Serial Monitor inputs (if available) and send them to SIM800
+  if(Serial.available()){    
+    serialSIM800.write(Serial.read());
+  }
+}
+void check_response()
+{
+  int i = 0;
+  int j = 0;
+  while(serialSIM800.available())
+  {
+    bufor[i] = serialSIM800.read();
+   // Serial.print(bufor);
+    i++;
+  }
+ str[0] =  bufor[0];
+ str[1] =  bufor[1];
+ str[2] =  bufor[2];
+ if(str == "485")
+ {
+  while(bufor[i] != '\n') i++;
+  while(bufor[i] != '\0')
+  {
+    sms[j++] = bufor[i];
+    i++;
+  }
+ }
+ else Serial.println("NIE wszedlem");
+ Serial.println(sms);
 }
 
 void gsm_sendthttp()
@@ -58,7 +98,8 @@ void gsm_sendthttp()
   Serial.println("AT+HTTPDATA=192,10000");
   runs1();
   delay(100);
-  serialSIM800.println("params=" + data1 + "~" + data2);
+  //root.printToSerial(serialSIM800);
+  serialSIM800.println("params=" + data1+" "+data2);
   runs1();
   delay(10000);
   serialSIM800.println("AT+HTTPACTION=1");
@@ -134,11 +175,11 @@ void runs1() {
 void sendSMS()
 {
   Serial.println("Sending SMS...");
-  serialSIM800.write("AT+CMGS=\"510312067\"\r\n");
+  serialSIM800.write("AT+CMGS=\"667648472\"\r\n");
   delay(1000);
 
   //Send SMS content
-  serialSIM800.write("To ja, super arduino, ktore nie umie jeszcze czytac");
+  serialSIM800.write("Spoko, siedze na arduino i nie widzialem wiadomosci, dopiero jak sie nauczylem czytac");
   delay(1000);
    
   //Send Ctrl+Z / ESC to denote SMS message is complete
