@@ -10,7 +10,7 @@ boolean czujnik_ruchu_zazb = false;           // informacja o zazbrojeniu czujni
 boolean wykryto_ruch = false;                 // informacja o wykryciu ruchu przez czujnik ---> 0 - niewykryto, 1 - wykryto
 unsigned long czasWykryciaRuchu = 10000;      // po wykryciu ruchu, zmienna wykryto_ruch jest ustawiana na True na 10 sekund
 unsigned long start_czujnika = 0;
-
+String lista_odbiorcow[5] = {"510312067", "0", "0", "0", "0"};
 
 void czytaj_czujnik_ruchu(){
   
@@ -52,6 +52,28 @@ void zmien_czas_wykrycia(int nowy_czas_wykrycia){
   czasWykryciaRuchu = nowy_czas_wykrycia*1000;  
 }
 
+void dodaj_odbiorce(String nr_telefonu){
+  
+  int i = 0;
+  
+  for(i=0; i<5; i++){
+    if (strcmp(lista_odbiorcow[i], "0") != 0)
+       lista_odbiorcow[i] = nr_telefonu;
+       i = 5;
+  }
+}
+
+void usun_odbiorce(String nr_telefonu){
+
+  int i = 0;
+  
+  for(i=0; i<5; i++){
+    if (strcmp(lista_odbiorcow[i],nr_telefonu) != 0){
+      lista_odbiorcow[i] = "0";
+    }
+  }
+  
+}
 void setup(){
   //Inicjalizacja po resecie
   Serial.begin(9600);        
