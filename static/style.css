@@ -1,0 +1,9 @@
+html, body {
+	color: black;
+}
+
+.nav-style {
+	font-size: 23px;
+	color: black;
+	margin-bottom: 20px;
+}
