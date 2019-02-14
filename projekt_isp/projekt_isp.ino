@@ -3,7 +3,7 @@
 #include <SoftwareSerial.h>
 
 char data[100];
-#define pinCzujnikaRuchu 8          // pin czujnika ruchu                                     
+#define pinCzujnikaRuchu 9          // pin czujnika ruchu                                     
 #define SIM800_TX_PIN 8             //SIM800 TX is connected to Arduino D8                                    
 #define SIM800_RX_PIN 7             //SIM800 RX is connected to Arduino D7
 
@@ -11,7 +11,7 @@ DS1307 zegar;
 RTCDateTime dt;
 boolean czujnik_ruchu_zazb = false;           // informacja o zazbrojeniu czujnika ruchu --> 0 - niezazbrojony, 1 - zazbrojony
 boolean wykryto_ruch = false;                 // informacja o wykryciu ruchu przez czujnik ---> 0 - niewykryto, 1 - wykryto
-unsigned long czasWykryciaRuchu = 10000;      // po wykryciu ruchu, zmienna wykryto_ruch jest ustawiana na True na 10 sekund
+unsigned long czasWykryciaRuchu = 30000;      // po wykryciu ruchu, zmienna wykryto_ruch jest ustawiana na True na 10 sekund
 unsigned long start_czujnika = 0;
 
 String lista_odbiorcow[5] = {"000000000", "000000000", "000000000", "000000000", "000000000",};
@@ -22,7 +22,7 @@ String response;
 String apn = "internet";                       //APN
 String apn_u = "internet";                     //APN-Username
 String apn_p = "internet";                     //APN-Password
-String url = "ptsv2.com/t/8qeqn-1550145914/post";  //URL for HTTP-POST-REQUEST
+String url = "http://ptsv2.com/t/e35py-1550165945/post";  //URL for HTTP-POST-REQUEST
 
 String data1;   //String for the first Paramter (e.g. Sensor1)
 String data2;   //String for the second Paramter (e.g. Sensor2)
@@ -36,6 +36,24 @@ void setup(){
   //Inicjalizacja po resecie
   Serial.begin(9600);        
   pinMode(pinCzujnikaRuchu, INPUT);
+
+   serialSIM800.begin(9600);
+  delay(1000);
+  serialSIM800.write("ATE0\r\n");
+  delay(1000);
+  serialSIM800.write("AT+CPIN=\"9303\"\r\n");
+  while(!serialSIM800.available())
+  //delay(1000);
+  serialSIM800.write("AT+CMGF=1\r\n");
+//  runs1();
+  delay(1000);
+  //sendSMS();
+  serialSIM800.write("AT+CMGF=1\r\n");
+  delay(1000);
+  serialSIM800.println("AT+CNMI=2,2,0,0,0");
+  
+ 
+  Serial.println("Setup Complete!");
    
   Serial.println("Zczytywane danych z czujnika ruchu"); 
   Serial.println(__TIME__);
@@ -55,36 +73,16 @@ void setup(){
   }
   
   //Po inicjalizacji pracy programu wczytujemy liste odbiorcow przechowywana w pamieci nieulotnej RTC
+  aktualizuj_odbiorcow();
   przepisz_odbiorcow();
+  odczyt_pamieci();
 
   //Inicjalizacja modulu GSM
    //Begin serial comunication with Arduino and Arduino IDE (Serial Monitor)
-  data1 = "elooo";
-  data2 = "adasd";
-  Serial.begin(9600);
-  while(!Serial);
    
   //Begin serial communication with Arduino and SIM800
-  serialSIM800.begin(9600);
-  delay(1000);
-  serialSIM800.write("ATE0\r\n");
-  delay(1000);
-  serialSIM800.write("AT+CPIN=\"9303\"\r\n");
-  delay(1000);
-//  serialSIM800.write("AT+CMGF=1\r\n");
-//  runs1();
-//  delay(1000);
-  //sendSMS();
-  serialSIM800.write("AT+CMGF=1\r\n");
-  delay(1000);
-  serialSIM800.println("AT+CNMI=2,2,0,0,0");
-  while(serialSIM800.available())
-  {
-    Serial.write(serialSIM800.read());
-  }
-  Serial.println("Setup Complete!");
+ 
  // readSMS();
-  //gsm_inithttp();
  
 }
 
@@ -102,15 +100,15 @@ void loop(){
   //gsm_sendthttp();
   //  Read SIM800 output (if available) and print it in Arduino IDE Serial Monitor
   
-  if(serialSIM800.available()){
-    //Serial.write(serialSIM800.read());
-    h = serialSIM800.read();
-    Serial.write(h);
-  }
-  //Read Arduino IDE Serial Monitor inputs (if available) and send them to SIM800
-  if(Serial.available()){    
-    serialSIM800.write(Serial.read());
-  }
+//  if(serialSIM800.available()){
+//    //Serial.write(serialSIM800.read());
+//    h = serialSIM800.read();
+//    Serial.write(h);
+//  }
+//  //Read Arduino IDE Serial Monitor inputs (if available) and send them to SIM800
+//  if(Serial.available()){    
+//    serialSIM800.write(Serial.read());
+//  }
 
                 
 }
@@ -130,8 +128,10 @@ void czytaj_czujnik_ruchu(){
       Serial.print(data);  
       Serial.print(" ---> ");                            
       Serial.println("Wysylam smsa z alarmem!");
-      // wyslij_smsa();
-      // wyslij_info_na_serwer()
+
+      data1 = data;
+      gsm_sendthttp();
+      sendSMS();
   }
   else if ((millis() - start_czujnika >= czasWykryciaRuchu) && wykryto_ruch) 
   {
@@ -229,7 +229,7 @@ void odczyt_listy(){
       Serial.println(lista_odbiorcow[i]);
   }
 
-
+}
 void check_response()
 {
   int i = 0;
@@ -257,26 +257,7 @@ void check_response()
 }
 
 void gsm_sendthttp()
-{
-  serialSIM800.println("AT+HTTPDATA=192,10000");
-  Serial.println("AT+HTTPDATA=192,10000");
-  runs1();
-  delay(100);
-  //root.printToSerial(serialSIM800);
-  serialSIM800.println("params=" + data1+" "+data2);
-  runs1();
-  delay(10000);
-  serialSIM800.println("AT+HTTPACTION=1");
-  Serial.println("AT+HTTPACTION=1");
-  runs1();
-  delay(5000);
-  serialSIM800.println("AT+HTTPREAD");
-  Serial.println("AT+HTTPREAD");
-  runs1();
-  delay(100);
-}
-void gsm_inithttp() {
-  
+{ 
   serialSIM800.println("AT");
   Serial.println("AT");
   runs1();//Print GSM Status an the Serial Output;
@@ -323,10 +304,28 @@ void gsm_inithttp() {
   Serial.println("AT+HTTPPARA=CONTENT,application/x-www-form-urlencoded");
   runs1();
   delay(100);
+
+  serialSIM800.println("AT+HTTPDATA=192,10000");
+  Serial.println("AT+HTTPDATA=192,20000");
+  runs1();
+  delay(100);
+  //root.printToSerial(serialSIM800);
+  data1 = "wykryto ruch";
+  serialSIM800.println("params=" + data1);
+  runs1();
+  delay(10000);
+  serialSIM800.println("AT+HTTPACTION=1");
+  Serial.println("AT+HTTPACTION=1");
+  runs1();
+  delay(5000);
+  serialSIM800.println("AT+HTTPREAD");
+  Serial.println("AT+HTTPREAD");
+  runs1();
+  delay(100);
   
- // serialSIM800.println("AT+HTTPTERM");
-//  Serial.println("AT+HTTPTERM");
-//  runs1(); 
+  serialSIM800.println("AT+HTTPTERM");
+  Serial.println("AT+HTTPTERM");
+  runs1(); 
   //Serial.println("Sent");
 }
 
@@ -339,11 +338,11 @@ void runs1() {
 void sendSMS()
 {
   Serial.println("Sending SMS...");
-  serialSIM800.write("AT+CMGS=\"667648472\"\r\n");
+  serialSIM800.write("AT+CMGS=\"510312067\"\r\n");
   delay(1000);
 
   //Send SMS content
-  serialSIM800.write("Spoko, siedze na arduino i nie widzialem wiadomosci, dopiero jak sie nauczylem czytac");
+  serialSIM800.write("Wykryto ruch");
   delay(1000);
    
   //Send Ctrl+Z / ESC to denote SMS message is complete
