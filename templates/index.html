@@ -43,7 +43,12 @@ function drawBasic() {
             title: 'Wartość z czujnika'
         },
         seriesType: 'line',
-        series: {0: {type: 'line'}, 1: {type: 'line'}},
+        series: {
+            0: {type: 'line',
+                pointShape: 'circle',
+                pointSize: 5},
+            1: {type: 'line'}
+            },
         trendlines: { 0: {
             //type: 'polynomial',
             //degree: 3,

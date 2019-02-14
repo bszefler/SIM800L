@@ -39,4 +39,4 @@ def dataToList():
     return [(dataSensor['timestamp'][i], dataSensor['value'][i]) for i in range(n)]
 
 if __name__ == '__main__':
-    app.run(host='192.168.0.241', port=5000, threaded=True)
+    app.run(host='192.168.0.241', port=8080, threaded=True)
