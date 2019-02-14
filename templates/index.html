@@ -1,39 +1,38 @@
 {%extends 'layout.html' %}
 
 {% block body %}
-<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<!--<script src="https://code.jquery.com/jquery-1.10.2.js"></script>-->
 
 <div class="main-container" style="text-align: center;">
     <div>
         <h1>Wykres danych z czujnika</h1>
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
         <div id="refresh">
             <div id="chart_div"></div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript">
-    setInterval(
-        function(){
-            $('#refresh').load(document.URL +  ' #refresh');
-    },15000);
-</script>
+<!--<script type="text/javascript">-->
+    <!--setInterval(-->
+        <!--function(){-->
+            <!--$('#refresh').load(document.URL +  ' #refresh');-->
+    <!--},15000);-->
+<!--</script>-->
 
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
 google.charts.load('current', {packages: ['corechart']});
 google.charts.setOnLoadCallback(drawBasic);
 
 function drawBasic() {
 
-    var data = new google.visualization.DataTable();
-    data.addColumn('number', 'time');
-    data.addColumn('number', 'data');
-
-    data.addRows([
+    var data = google.visualization.arrayToDataTable([
+        ['n','value','avg'],
         {% for data in dataList %}
-            [{{ data[0] }}, {{ data[1] }}],
+            [{{ data[0] }}, {{ data[1] }}, {{ avg }}],
         {%endfor %}
+
     ]);
 
     var options = {
@@ -43,15 +42,17 @@ function drawBasic() {
         vAxis: {
             title: 'Wartość z czujnika'
         },
-        legend: 'none',
+        seriesType: 'line',
+        series: {0: {type: 'line'}, 1: {type: 'line'}},
         trendlines: { 0: {
             //type: 'polynomial',
             //degree: 3,
+            color: 'black'
             }
         }
     };
 
-    var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+    var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
 
     chart.draw(data, options);
     refresh();
