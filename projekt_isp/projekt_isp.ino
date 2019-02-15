@@ -12,7 +12,7 @@ String response;
 String apn = "internet";                       //APN
 String apn_u = "internet";                     //APN-Username
 String apn_p = "internet";                     //APN-Password
-String url = "ptsv2.com/t/8qeqn-1550145914/post";  //URL for HTTP-POST-REQUEST
+String url = "http://www.ptsv2.com/t/yndqe-1550222777/post";  //URL for HTTP-POST-REQUEST
 
 String data1;   //String for the first Paramter (e.g. Sensor1)
 String data2;   //String for the second Paramter (e.g. Sensor2)
