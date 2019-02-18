@@ -24,3 +24,4 @@ Projekt polega na zbieraniu danych pomiarowych z czujnika ruchu oraz wysyłaniu 
 	-	usun_odbiorce(nr_telefonu)  
 	-	aktualizuj_odbiorcow()
    
+   Do przesyłania i możliwości zapisywania danych i ich wizualizacji za pomocą wykresu została stworzony serwer REST-API. Serwer odbiera dane za pomocą metody POST, ktora jest wysyłana przez moduł SIM800L. Wiadomość do serwera jest przesyłana w formacie JSON. Zawiera on informacje na temat wartości odczytanej przez sensor oraz czasu odczytanego z modułu RTC. Dane są zapisywane na serwerze po czym za pomocą odpowiedniej biblioteki JavaScript (Google charts) rysowane na stronie webowej. Na wykresie znajdują się informacje na temat  odczytanej wartości, linii trendu oraz linii wartości średniej.
